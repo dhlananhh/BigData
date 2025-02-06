@@ -1,0 +1,3 @@
+Scrapy==2.12.0
+mysql-connector-python==8.0.28
+pymongo==4.6.1

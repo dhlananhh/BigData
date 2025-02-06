@@ -1,0 +1,53 @@
+services:
+  spider:
+    build: .
+    container_name: tvpl_spider
+    depends_on:
+      - mongodb
+      - postgres
+    environment:
+      - MONGODB_HOST=mongodb
+      - POSTGRES_HOST=postgres
+    volumes:
+      - ./data:/app/data
+
+  mariadb:
+    image: mariadb:latest
+    container_name: mariadb
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: bookscraper
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mariadb:/var/lib/mysql
+
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb
+    ports:
+      - "27017:27017"
+    volumes:
+      - ./docker/mongo:/data/db
+
+  postgres:
+    image: postgres:latest
+    container_name: postgres
+    environment:
+      POSTGRES_USER: xuatnhapcanh_user
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: xuatnhapcanh_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  mongodb_data:
+  postgres_data:
+
+networks:
+  default:
+    name: tvpl_network
