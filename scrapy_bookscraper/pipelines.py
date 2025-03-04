@@ -6,10 +6,8 @@
 
 
 import mysql.connector
-from itemadapter import ItemAdapter
 import csv
 import json
-from pymongo import MongoClient
 import logging
 import os
 
@@ -135,60 +133,3 @@ class JsonPipeline:
 
     def close_spider(self, spider):
         self.file.close()
-
-
-class MongoDBPipeline:
-    def __init__(self):
-        self.client = pymongo.MongoClient("mongodb://localhost:27017/")
-        self.db = self.client["bookscraper"]
-        self.collection = self.db["books"]
-
-    def process_item(self, item, spider):
-        self.collection.insert_one(ItemAdapter(item).asdict())
-        return item
-
-    def close_spider(self, spider):
-        self.client.close()
-
-
-class MongoDBPipeline:
-    def __init__(self, mongodb_settings):
-        self.mongodb_settings = mongodb_settings
-
-    @classmethod
-    def from_crawler(cls, crawler):
-        return cls(mongodb_settings=crawler.settings.get("MONGODB_SETTINGS"))
-
-    def open_spider(self, spider):
-        try:
-            self.client = MongoClient(
-                host=self.mongodb_settings["host"], port=self.mongodb_settings["port"]
-            )
-            self.db = self.client[self.mongodb_settings["db"]]
-            self.collection = self.db["articles"]
-            self.collection.create_index([("url", 1)], unique=True)
-            logging.info("Successfully connected to MongoDB")
-        except Exception as e:
-            logging.error(f"Error connecting to MongoDB: {e}")
-            raise
-
-    def process_item(self, item, spider):
-        try:
-            item_dict = ItemAdapter(item).asdict()
-            item_dict["updated_at"] = datetime.now()
-
-            self.collection.update_one(
-                {"url": item_dict["url"]}, {"$set": item_dict}, upsert=True
-            )
-            logging.info(f"Successfully saved item to MongoDB: {item_dict['url']}")
-            return item
-        except Exception as e:
-            logging.error(f"Error saving to MongoDB: {e}")
-            return item
-
-    def close_spider(self, spider):
-        try:
-            self.client.close()
-            logging.info("Closed MongoDB connection")
-        except Exception as e:
-            logging.error(f"Error closing MongoDB connection: {e}")
