@@ -1,10 +1,21 @@
+# base image
 FROM python:3.11-slim
 
+# metadata
+LABEL maintainer="dhlananh2309@gmail.com"
+
+# set working directory
 WORKDIR /app
 
+# install dependencies
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
+# copy project
 COPY . .
 
+# expose port
+EXPOSE 5000
+
+# run command
 CMD ["scrapy", "crawl", "bookscraper"]
